@@ -1,0 +1,22 @@
+{
+  "name": "labecommerce-backend",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "clear && node ./index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/thamidorville/labecommerce-backend.git"
+  },
+  "keywords": [],
+  "author": "thamiris-dorville",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/thamidorville/labecommerce-backend/issues"
+  },
+  "homepage": "https://github.com/thamidorville/labecommerce-backend#readme"
+}
