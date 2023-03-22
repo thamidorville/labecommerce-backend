@@ -31,15 +31,25 @@
 export type TUser = {
     id: string,
     name: string,
+    email: string,
     password: string,
 
 }
+// typescript-ii exercicio 1. Vamos refatorar nosso type de product para utilizar enum na propriedade category.
+
+export enum ROUPASESPACIAIS {
+    VESTIDO = "vestido",
+    MACACAO = "macacao",
+    BODY = "body",
+    CONJUNTO = "conjunto"
+}
+
 
 export type TProduct = {
     id: string,
     name: string,
     price: number,
-    category: string,
+    category: ROUPASESPACIAIS,
 }
 
 export type TPurchase = {
