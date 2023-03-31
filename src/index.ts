@@ -110,3 +110,99 @@ app.post('/purchases', (req:Request, res:Response) => {
     purchase.push(newPurchase)
     res.status(201).send("Compra realizada com sucesso!")
 })
+
+//APROFUNDAMENTO EXPRESS 
+
+//EXERCICIO 1
+
+//Get Products by id
+
+app.get('/products/:id', (req:Request, res:Response) => {
+
+    const id = req.params.id
+    const result = products.find((product) => product.id === id)
+    res.status(200).send(`Produto encontrado!', ${JSON.stringify(result)}`)
+})
+
+//Get User Purchases by User id
+
+app.get('/users/:id/purchases', (req:Request, res:Response) => {
+
+const userId = req.params.id
+
+const userPurchase = purchase.find((purchase) => purchase.userId === userId )
+userPurchase ? res.status(200).send(`Compra encontrada: ${JSON.stringify(userPurchase)}`) 
+: res.status(400).send('Compra não encontrada!')
+})
+
+//aprofundamento express 
+//EXERCICIO 2
+
+//Delete User by id
+
+app.delete('/users/:id', (req:Request, res:Response) => {
+    const id = req.params.id
+    const indexToRemove = users.findIndex((user) => user.id === id)
+
+    indexToRemove >= 0 && users.splice(indexToRemove, 1)
+    res.status(200).send('User apagado com sucesso!')
+})
+
+//Delete Product by id
+
+app.delete('/products/:id', (req:Request, res:Response) => {
+    const id = req.params.id
+
+    const indexToRemove = products.findIndex((product) => product.id === id)
+
+    if (indexToRemove >= 0) {
+        products.splice(indexToRemove, 1)
+    }
+    res.status(200).send('Produto apagado com sucesso!')
+})
+
+//EXERCICIO 3 - APROFUNDAMENTO EXPRESS
+
+//EDIT USER BY ID
+
+app.put('/users/:id', (req:Request, res:Response) => {
+    const id = req.params.id
+
+    const newId = req.body.id as string | undefined
+    const newName = req.body.name as string | undefined 
+    const newEmail = req.body.email as string | undefined 
+    const newPassword = req.body.password as string | undefined
+
+    const user = users.find((user) => user.id === id)
+
+    if(user) {
+        user.id = newId || user.id
+        user.name = newName || user.name
+        user.email = newEmail || user.email
+        user.password = newPassword || user.password
+    }
+    res.status(200).send('Cadastro realizado com sucesso')
+
+})
+
+//edit product by id
+
+app.put('/products/:id', (req:Request, res:Response) => {
+    const id = req.params.id
+
+    const newId = req.body.id as string | undefined
+    const newName = req.body.name as string | undefined 
+    const newPrice = req.body.price as number
+    const newCategory = req.body.category as ROUPASESPACIAIS | undefined
+
+    const product = products.find((product) => product.id === id)
+
+    if (product){
+        product.id = newId || product.id
+        product.name = newName || product.name
+        product.price = isNaN(newPrice) ? product.price : newPrice
+        product.category = newCategory || product.category
+    }
+    res.status(200).send('Produto atualizado com sucesso!')
+})
+
