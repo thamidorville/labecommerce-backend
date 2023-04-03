@@ -43,26 +43,55 @@ app.get('/ping', (req:Request, res:Response) => {
 
 //getAllUsers
 app.get('/users', (req:Request, res:Response) => {
-    res.status(200).send(users)
+    try {
+        res.status(200).send(users)
+    } catch (error) {
+        res.status(500).send("erro ao carregar os usuários.")
+    }
 })
 
 //getAllProducts
 app.get('/products', (req:Request, res:Response) => {
-    res.status(200).send(products)
+    try {
+        res.status(200).send(products)
+    } catch (error) {
+        res.status(500).send("erro ao carregar os produtos.")
+    }
 })
 
 //search product by name
+//exercicio 1 - fluxo de dados em back end
+//query params deve possuir pelo menos 1 caractere
 
 app.get('/products/search', (req:Request, res:Response)=>{
+  try {
     const q = req.query.q as string
 
+    if(!q || q.length === 0){
+        throw new Error("parâmetro deve possuir pelo menos um caractere")
+    }
+    
     const productsFilter = products.filter((product) => 
     product.name.toLowerCase().includes(q.toLowerCase())
     )
     res.status(200).send(productsFilter)
+  } catch (error) {
+    if(error instanceof Error){ 
+        res.status(400).send(error.message)
+    }else {
+        res.status(400).send("erro desconhecido!")
+    }
+   
+  }
 })
 //create user
+//exercicio 1 - fluxo de dados back end
+//validar o body
+//nao deve ser possivel criar mais de uma conta com a mesma id
+//nao deve ser possivel criar mais de uma conta com o mesmo email
+
 app.post('/users', (req:Request, res:Response) => {
+ try {
     const id = req.body.id
     const name = req.body.name
     const email = req.body.email
@@ -74,13 +103,42 @@ app.post('/users', (req:Request, res:Response) => {
         email, 
         password
     }
+
+    if(!id || !name || !email || !password){
+        throw new Error("Preenchimento de todos os campos são obrigatórios.")
+    }
+
+    const verificarUsuarioComMesmoId = users.find((user) => user.id === id)
+    if(verificarUsuarioComMesmoId){
+        throw new Error("Já existe um usuário com este id.")
+    }
+    const emailRepetido = users.find((user) => user.email === email)
+    if(emailRepetido){
+        throw new Error("Já existe um usuário com este email.")
+    }
+
     users.push(newUser)
     res.status(201).send("Cadastro realizado com sucesso!")
+
+
+} catch (error) {
+    if (error instanceof Error) {
+        res.status(400).send(error.message);
+    } else {
+        console.error(error);
+        res.status(500).send("Erro interno do servidor");
+    }
+ }
 })
 
 //create product
+// exercicio 1 - fluxo de dados back end
+//validar o body
+// não deve ser possível criar mais de um produto com a mesma id
+
 app.post('/products', (req:Request, res:Response) => {
-    const id = req.body.id
+    try {
+        const id = req.body.id
     const name = req.body.name
     const price = req.body.price
     const category = req.body.category
@@ -91,12 +149,35 @@ app.post('/products', (req:Request, res:Response) => {
         price, 
         category
     }
+
+    if (!id || !name || !price || !category){
+        throw new Error("Todos os campos devem ser preenchidos obrigatoriamente!")
+    }
+    const produtoComIdRepetida = products.find((product) => product.id === id)
+    if(produtoComIdRepetida){
+        throw new Error("Produto com id repetida.")
+    }
     products.push(newProduct)
     res.status(201).send("Produto cadastrado com sucesso!")
+    } catch (error) {
+        if(error instanceof Error){
+            res.status(400).send(error.message)
+        } else {
+            res.status(400).send("erro desconhecido.")
+        }
+        
+    }
 })
+//create purchase
+//exercicio 1 - fluxo de dados back end
+//validar o body 
+// - id do usuário que fez a compra deve existir no array de usuários cadastrados
+// - id do produto que foi comprado deve existir no array de produtos cadastrados
+// - a quantidade e o total da compra devem estar com o cálculo correto
 
 app.post('/purchases', (req:Request, res:Response) => {
-    const userId = req.body.id
+    try {
+        const userId = req.body.id
     const productId = req.body.id
     const quantity = req.body.quantity
     const totalPrice = req.body.totalPrice
@@ -107,8 +188,30 @@ app.post('/purchases', (req:Request, res:Response) => {
         quantity,
         totalPrice
     }
+
+    const idProdutoComprado = products.find((product) => product.id === productId)
+    const usuarioComprador = users.find((user) => user.id === userId)
+
+        if(!idProdutoComprado){
+            throw new Error("produto não encontrado.")
+        }
+        if(!usuarioComprador){
+            throw new Error("usuário não encontrado.")
+        }
+        if(!quantity || quantity < 1){
+            throw new Error("Quantidade inválida.")
+        }
+        const precoTotal = quantity * productId.price
+    
     purchase.push(newPurchase)
     res.status(201).send("Compra realizada com sucesso!")
+    } catch (error) {
+        if(error instanceof Error){
+            res.status(400).send(error.message)
+        } else {
+            res.status(400).send("erro desconhecido.")
+        }
+    }
 })
 
 //APROFUNDAMENTO EXPRESS 
@@ -117,22 +220,54 @@ app.post('/purchases', (req:Request, res:Response) => {
 
 //Get Products by id
 
+// FLUXO DE DADOS BACK END EXERCICIO 2
+//VALIDAR QUE O PRODUTO EXISTE
+
 app.get('/products/:id', (req:Request, res:Response) => {
 
+   try {
     const id = req.params.id
     const result = products.find((product) => product.id === id)
+
+    if(!result){
+        throw new Error("Produto não encontrado.")
+    }
     res.status(200).send(`Produto encontrado!', ${JSON.stringify(result)}`)
+    
+   } catch (error) {
+    if(error instanceof Error){
+        res.status(400).send(error.message)
+    }else {
+        res.status(400).send("erro desconhecido.")
+    }
+   }
 })
 
 //Get User Purchases by User id
+// exercicio 2 - fluxo de dados back end
+//validade que o usuario existe
 
 app.get('/users/:id/purchases', (req:Request, res:Response) => {
-
-const userId = req.params.id
+try {
+    const userId = req.params.id
 
 const userPurchase = purchase.find((purchase) => purchase.userId === userId )
-userPurchase ? res.status(200).send(`Compra encontrada: ${JSON.stringify(userPurchase)}`) 
-: res.status(400).send('Compra não encontrada!')
+
+    if(!userPurchase){
+        throw new Error("Id do usuario comprador nao identificada.")
+
+    }
+
+    res.status(200).send(`id de Compra encontrada: ${JSON.stringify(userPurchase)}`)
+//     userPurchase ? res.status(200).send(`id de Compra encontrada: ${JSON.stringify(userPurchase)}`) 
+// : res.status(400).send('id de Compra não encontrada!')
+} catch (error) {
+    if(error instanceof Error){
+        res.status(400).send('id de Compra não encontrada!')
+    } else {
+        res.status(400).send("erro desconhecido.")
+    }
+}
 })
 
 //aprofundamento express 
@@ -140,32 +275,62 @@ userPurchase ? res.status(200).send(`Compra encontrada: ${JSON.stringify(userPur
 
 //Delete User by id
 
+//exercicio 2 - fluxo de dados back end
+//validar que o usuario existe
+
 app.delete('/users/:id', (req:Request, res:Response) => {
-    const id = req.params.id
-    const indexToRemove = users.findIndex((user) => user.id === id)
+    try {
+        const id = req.params.id
+        const indexToRemove = users.findIndex((user) => user.id === id)
+
+        if(indexToRemove === -1){
+            throw new Error("não existe usuário.")
+        }
 
     indexToRemove >= 0 && users.splice(indexToRemove, 1)
     res.status(200).send('User apagado com sucesso!')
+    } catch (error) {
+        if(error instanceof Error){
+            res.status(400).send(error.message)
+        }
+    }
 })
 
 //Delete Product by id
 
+// exercicio 2 - fluxo de dados back end
+// - validar que o produto existe
 app.delete('/products/:id', (req:Request, res:Response) => {
+  try {
     const id = req.params.id
 
     const indexToRemove = products.findIndex((product) => product.id === id)
+
+    if(indexToRemove === -1){
+        throw new Error("produto não existe.")
+    }
 
     if (indexToRemove >= 0) {
         products.splice(indexToRemove, 1)
     }
     res.status(200).send('Produto apagado com sucesso!')
+  } catch (error) {
+    if(error instanceof Error){
+        res.status(400).send(error.message)
+    }
+  }
 })
 
 //EXERCICIO 3 - APROFUNDAMENTO EXPRESS
 
 //EDIT USER BY ID
 
+//exercicio 3 - fluxo de dados back end
+// - validar que o usuario existe 
+//- validar o body
+
 app.put('/users/:id', (req:Request, res:Response) => {
+   try {
     const id = req.params.id
 
     const newId = req.body.id as string | undefined
@@ -173,7 +338,14 @@ app.put('/users/:id', (req:Request, res:Response) => {
     const newEmail = req.body.email as string | undefined 
     const newPassword = req.body.password as string | undefined
 
+        if (!newId || !newName || !newEmail || newPassword){
+            throw new Error("Todos os campos devem ser preenchidos.")
+        }
     const user = users.find((user) => user.id === id)
+
+    if(!user){
+        throw new Error("Usuário não existe.")
+    }
 
     if(user) {
         user.id = newId || user.id
@@ -182,20 +354,36 @@ app.put('/users/:id', (req:Request, res:Response) => {
         user.password = newPassword || user.password
     }
     res.status(200).send('Cadastro realizado com sucesso')
+   } catch (error) {
+    if(error instanceof Error){
+        res.status(400).send(error.message)
+    }
+   }
 
 })
 
 //edit product by id
-
+//exercicio 2 - fluxo de dados back end
+// - validar que o produto existe
+// - validar o body
 app.put('/products/:id', (req:Request, res:Response) => {
-    const id = req.params.id
+    try {
+        const id = req.params.id
 
     const newId = req.body.id as string | undefined
     const newName = req.body.name as string | undefined 
     const newPrice = req.body.price as number
     const newCategory = req.body.category as ROUPASESPACIAIS | undefined
 
+    if (!newId || !newName || !newPrice || newCategory){
+        throw new Error("Todos os campos devem ser preenchidos.")
+    }
+
     const product = products.find((product) => product.id === id)
+
+    if(!product){
+        throw new Error("produto não existe.")
+    }
 
     if (product){
         product.id = newId || product.id
@@ -204,5 +392,10 @@ app.put('/products/:id', (req:Request, res:Response) => {
         product.category = newCategory || product.category
     }
     res.status(200).send('Produto atualizado com sucesso!')
+    } catch (error) {
+        if(error instanceof Error){
+            res.status(400).send(error.message)
+        }
+    }
 })
 
