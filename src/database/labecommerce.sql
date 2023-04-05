@@ -148,3 +148,55 @@ ORDER BY price ASC;
 SELECT * FROM products
 WHERE price BETWEEN 100.00 and 300.00
 ORDER BY name ASC;
+
+-- RELAÇÕES SQL - I - EXERCÍCIO 1
+-- criar a tabela de pedidos (purchases).
+
+CREATE TABLE purchases(
+    id TEXT PRIMARY KEY UNIQUE NOT NULL,
+    total_price REAL NOT NULL,
+    paid INTEGER NOT NULL DEFAULT 0,
+    delivered_at TEXT,
+    buyer_id TEXT NOT NULL,
+    FOREIGN KEY (buyer_id) REFERENCES users(id)
+);
+
+DROP TABLE purchases;
+
+-- RELAÇÕES SQL - I - EXERCÍCIO 2
+-- Popular tabela
+-- a) Crie dois pedidos para cada usuário cadastrado
+-- No mínimo 4 no total (ou seja, pelo menos 2 usuários diferentes) 
+-- e devem iniciar com a data de entrega nula.
+
+INSERT INTO purchases(
+    id, total_price, paid, delivered_at, buyer_id
+) VALUES
+    ('1', 550.00, 0, NULL, '1234'),
+    ('2', 250.00, 0, NULL, '1234'),
+    ('3', 120.00, 0, NULL, '4321'),
+    ('4', 300.00, 0, NULL, '4321');
+    
+SELECT * FROM purchases;
+-- b) Edite o status da data de entrega de um pedido
+-- Simule que o pedido foi entregue no exato momento da sua edição 
+--(ou seja, data atual).
+    UPDATE purchases
+    SET delivered_at = DATETIME('now') --SET para alterar o valor da coluna delivered_at
+    WHERE id = '2';            
+
+-- RELAÇÕES SQL - I - EXERCÍCIO 2
+-- Crie a query de consulta utilizando junção para simular um endpoint de 
+-- histórico de compras de um determinado usuário.
+-- Mocke um valor para a id do comprador, ela deve ser uma das que 
+-- foram utilizadas no exercício 2.
+
+SELECT purchases.id,
+purchases.total_price,
+purchases.paid,
+purchases.delivered_at,
+users.id FROM purchases
+JOIN users 
+ON purchases.buyer_id = users.id -- junta a a coluna buyer_id da tabela
+-- purchases com a coluna i da tabela users
+WHERE purchases.buyer_id = '1234';
