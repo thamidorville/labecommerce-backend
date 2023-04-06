@@ -200,3 +200,70 @@ JOIN users
 ON purchases.buyer_id = users.id -- junta a a coluna buyer_id da tabela
 -- purchases com a coluna i da tabela users
 WHERE purchases.buyer_id = '1234';
+
+-- RELAÇÕES SQL - II - EXERCÍCIO 1
+
+-- implementar a tabela de relações entre produtos e pedidos.
+-- Criação da tabela de relações
+-- nome da tabela: purchases_products
+-- colunas da tabela:
+-- purchase_id (TEXT e obrigatório, não deve ser único)
+-- product_id (TEXT e obrigatório, não deve ser único)
+-- quantity (INTEGER e obrigatório, não deve ser único)
+
+CREATE TABLE purchases_products
+(
+    purchase_id TEXT NOT NULL,
+    product_id TEXT NOT NULL,
+    quantity INTEGER NOT NULL,
+    FOREIGN KEY (purchase_id) REFERENCES purchases(id),
+    FOREIGN KEY (product_id) REFERENCES products(id)
+);
+
+-- RELAÇÕES SQL - II - Exercício 2
+-- Com a tabela de relações criada podemos finalmente
+-- realizar compras no banco de dados!
+
+-- Inserção dos dados
+-- Popule sua tabela purchases_products simulando 3 compras de clientes.
+
+INSERT INTO purchases_products(purchase_id, product_id, quantity)
+VALUES
+(
+    '1', '2', 1
+),
+(
+    '4', '1', 2
+),
+(
+    '3', '5', 3
+);
+
+-- o id de pedido 1, com o id do produto 2, 1 (uma fantasia)
+-- o pedido de id 4, comprou o produto de id 1, 2 (duas fantasias)
+-- o pedido de id 3, comprou o produto de id 5, 3 (tres fantasias)
+
+--EXERCÍCIO 2.1
+
+-- Consulta com junção INNER JOIN
+-- Mostre em uma query todas as colunas das 
+-- tabelas relacionadas (purchases_products, purchases e products).
+
+SELECT 
+
+purchases.id AS IdDoPedido,
+purchases.total_price AS TotalDoPedido,
+purchases.paid,
+purchases.delivered_at,
+purchases.buyer_id,
+products.id AS IdDoProduto,
+products.name AS nomeDoProduto,
+products.price AS valorDoProduto,
+products.category AS categoriaDoProduto
+
+FROM purchases_products
+INNER JOIN purchases
+ON purchases_products.purchase_id = purchases.id
+INNER JOIN products
+ON purchases_products.product_id = products.id;
+
