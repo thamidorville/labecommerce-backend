@@ -267,3 +267,18 @@ ON purchases_products.purchase_id = purchases.id
 INNER JOIN products
 ON purchases_products.product_id = products.id;
 
+            --                     Exercício 2
+            -- Apague as tabelas SQL de users, products e purchases 
+            -- SELECT * FROM users;
+            DROP TABLE users;
+            DROP TABLE products;
+            DROP TABLE purchases;
+
+
+            --e as crie novamente apenas com as colunas descritas abaixo 
+             --(são as mesmas colunas que estão nos requisitos finais do projeto).
+            
+           
+            
+            -- Em seguida, refatore (ou recrie) os seguintes endpoints: INDEX.TS
+            
