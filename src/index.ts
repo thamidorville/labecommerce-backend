@@ -49,11 +49,16 @@ app.get('/ping', (req:Request, res:Response) => {
                     // REFATORE OS SEGUINTES ENDPOINTS
                     //GET ALL USERS
 
+                    //APROFUNDANDO KNEX - EXERCÍCIO 1
+                    //Refatore pelo menos 3 endpoints que você fez em raw para query builder
 
-app.get('/users', async (req:Request, res:Response) => {
+    app.get('/users', async (req:Request, res:Response) => {
     try {
 
-        const result = await db.raw(`SELECT * FROM users`)
+        // const result = await db.raw(`SELECT * FROM users`)
+
+
+            const result = await db.select("*").from("users")
 
         res.status(200).send(users)
     } catch (error) {
@@ -64,9 +69,15 @@ app.get('/users', async (req:Request, res:Response) => {
                             // REFATORE OS SEGUINTES ENDPOINTS
                             //GET ALL PRODUCTS
 //getAllProducts
+
+                    //APROFUNDANDO KNEX - EXERCÍCIO 1
+                    //Refatore pelo menos 3 endpoints que você fez em raw para query builder
 app.get('/products', async (req:Request, res:Response) => {
     try {
-        const result = await db.raw(`SELECT * FROM products`)
+        // const result = await db.raw(`SELECT * FROM products`)
+
+                const result = await db("products")
+
         res.status(200).send(products)
     } catch (error) {
         res.status(500).send("erro ao carregar os produtos.")
@@ -82,6 +93,9 @@ app.get('/products', async (req:Request, res:Response) => {
                             // REFATORE OS SEGUINTES ENDPOINTS
                             //SEARCH PRODUCT BY NAME
 
+        // APROFUNDANDO KNEX - Exercício 1
+        //Refatore pelo menos 3 endpoints que você fez em raw para query builder.
+
 app.get('/products/search', async (req:Request, res:Response)=>{
   try {
     const q = req.query.q as string
@@ -93,8 +107,10 @@ app.get('/products/search', async (req:Request, res:Response)=>{
     // const productsFilter = products.filter((product) => 
     // product.name.toLowerCase().includes(q.toLowerCase())
     // )
+//  const productsFilter = await db.raw(`SELECT * FROM products WHERE (name) LIKE '%${q.toLowerCase()}%'`);
 
-        const productsFilter = await db.raw(`SELECT * FROM products WHERE (name) LIKE '%${q.toLowerCase()}%'`);
+                const productsFilter = await db("products").where("name", "LIKE", `%${q.toLowerCase()}%'`)
+       
 
     res.status(200).send(productsFilter)
   } catch (error) {
@@ -572,4 +588,58 @@ app.put('/products/:id', (req:Request, res:Response) => {
         }
     }
 })
+
+                //APROFUNDANDO KNEX - EXERCÍCIO 2
+                //Exercício 2
+                // Crie o seguinte endpoint com query builder: GET PURCHASE BY ID
+
+                //APROFUNDANDO KNEX - EXERCÍCIO 3
+            //Refatore o endpoint criado no exercício anterior para que 
+            //o resultado bem sucedido também retorne a lista de produtos 
+            //registrados na compra.
+
+            app.get("/purchases/:id", async (req:Request, res:Response)=>{
+                try {
+                    
+                    const purchaseId = req.params.id
+
+                    const purchases = await db("purchases").select(
+                    "id as purchaseId",
+                    "total_Price as totalPrice",
+                    "created_at as createdAt",
+                    "is_paid as isPaid",
+                    "buyer_id as buyerId",
+                    "buyer_email as buyerEmail", 
+                    "buyer_name as name"
+                    ).where({id:purchaseId})
+
+                   if (!purchases){
+                        throw new Error("Compra não encontrada.")
+                    }
+
+                    const products = await db("purchases_products").select(
+                        "products.id as id",
+                        "products.name as name",
+                        "products.price as price",
+                        "products.description as description",
+                        "products.image_url as imageUrl",
+                        "purchases_products.quantity as quantity"
+                    ).join("products", "products.id", "purchases_products.product.id").where(
+                        "purchases_products.purchase_id", req.params.id);
+
+                        res.status(200).json({
+                            ...purchases,
+                            productsList: products,
+                        })
+
+                } catch (error) {
+                    if(error instanceof Error){
+                        res.status(400).send(error.message)
+                    }
+                }
+                }
+            )
+
+            
+
 
